@@ -8,12 +8,12 @@ import {
   Puzzle,
   Settings,
   Sparkles,
-  LogOut,
+  UserRound,
   ExternalLink,
   Shield
 } from 'lucide-react';
 
-export default function Sidebar({ currentView, setCurrentView, onOpenAuth }) {
+export default function Sidebar({ currentView, setCurrentView, onOpenAuth, user, profile }) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'analyze', label: 'New Analysis', icon: Search },
@@ -21,7 +21,7 @@ export default function Sidebar({ currentView, setCurrentView, onOpenAuth }) {
     { id: 'sources', label: 'Source Watchlist', icon: ShieldAlert },
     { id: 'history', label: 'Scan History', icon: History },
     { id: 'extension', label: 'Browser Extension', icon: Puzzle },
-    { id: 'settings', label: 'Settings & AI Engine', icon: Settings },
+    { id: 'settings', label: 'Account settings', icon: Settings },
   ];
 
   return (
@@ -137,15 +137,21 @@ export default function Sidebar({ currentView, setCurrentView, onOpenAuth }) {
       <div className="sidebar-footer">
         <div className="user-badge" style={{ justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div className="user-avatar">SB</div>
+            <div className="user-avatar">
+              {(profile?.display_name || user?.email || 'A').slice(0, 2).toUpperCase()}
+            </div>
             <div>
-              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>Sumanth</div>
-              <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>Pro Analyst Tier</div>
+              <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f8fafc' }}>
+                {profile?.display_name || user?.email?.split('@')[0] || 'Account'}
+              </div>
+              <div style={{ fontSize: '0.68rem', color: '#94a3b8' }}>
+                {profile?.role === 'admin' ? 'Administrator' : 'Account'}
+              </div>
             </div>
           </div>
           <button
             onClick={onOpenAuth}
-            title="Account"
+            title="Account settings"
             style={{
               background: 'transparent',
               border: 'none',
@@ -154,7 +160,7 @@ export default function Sidebar({ currentView, setCurrentView, onOpenAuth }) {
               padding: '4px'
             }}
           >
-            <LogOut size={16} />
+            <UserRound size={16} />
           </button>
         </div>
       </div>

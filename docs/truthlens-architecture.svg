@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="760" viewBox="0 0 1440 760" fill="none" role="img" aria-labelledby="title description">
+  <title id="title">TruthLens platform architecture</title>
+  <desc id="description">A polished isometric architecture illustration showing the TruthLens web app connected to Gemini analysis and Supabase Auth and private Postgres storage.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1440" y2="760" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#07111F"/>
+      <stop offset="1" stop-color="#101D32"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#13263F"/>
+      <stop offset="1" stop-color="#0C192B"/>
+    </linearGradient>
+    <linearGradient id="client" x1="120" y1="270" x2="475" y2="500" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#173B62"/>
+      <stop offset="1" stop-color="#10223A"/>
+    </linearGradient>
+    <linearGradient id="gemini" x1="710" y1="190" x2="1120" y2="365" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#263D66"/>
+      <stop offset="1" stop-color="#172544"/>
+    </linearGradient>
+    <linearGradient id="database" x1="690" y1="430" x2="1120" y2="615" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#123F49"/>
+      <stop offset="1" stop-color="#102B3B"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#38BDF8"/>
+    </linearGradient>
+    <linearGradient id="green" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#2DD4BF"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB" filterUnits="objectBoundingBox">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+    <pattern id="grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" stroke="#8BA6C6" stroke-opacity=".055"/>
+    </pattern>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M1 1L8 5L1 9" stroke="#60A5FA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M1 1L8 5L1 9" stroke="#34D399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <rect width="1440" height="760" rx="28" fill="url(#background)"/>
+  <rect width="1440" height="760" rx="28" fill="url(#grid)"/>
+  <ellipse cx="356" cy="480" rx="300" ry="180" fill="#2563EB" fill-opacity=".14" filter="url(#shadow)"/>
+  <ellipse cx="1048" cy="430" rx="310" ry="220" fill="#14B8A6" fill-opacity=".1" filter="url(#shadow)"/>
+
+  <g font-family="Inter, Segoe UI, Arial, sans-serif">
+    <text x="76" y="78" fill="#7DD3FC" font-size="13" font-weight="700" letter-spacing="2.6">TRUTHLENS / PLATFORM MAP</text>
+    <text x="76" y="125" fill="#F8FAFC" font-size="35" font-weight="750" letter-spacing="-1">From claim to confident review.</text>
+    <text x="78" y="158" fill="#9FB2CA" font-size="16">A private, account-aware workflow for misinformation analysis.</text>
+
+    <path d="M444 350C535 350 555 278 657 278" stroke="#60A5FA" stroke-opacity=".85" stroke-width="2.5" stroke-dasharray="7 8" marker-end="url(#arrowBlue)"/>
+    <path d="M444 431C548 431 568 503 657 503" stroke="#34D399" stroke-opacity=".85" stroke-width="2.5" stroke-dasharray="7 8" marker-end="url(#arrowGreen)"/>
+    <circle cx="535" cy="348" r="5" fill="#60A5FA"/>
+    <circle cx="574" cy="465" r="5" fill="#34D399"/>
+
+    <g>
+      <path d="M105 278L137 257H430L458 278V487L430 509H137L105 487V278Z" fill="#050B14" fill-opacity=".72"/>
+      <path d="M105 278L137 257H430L458 278L430 299H137L105 278Z" fill="#28517C"/>
+      <path d="M430 278L458 278V487L430 509V299L430 278Z" fill="#0B1B2D" stroke="#31587E"/>
+      <path d="M105 278L137 299V509L105 487V278Z" fill="#122C48"/>
+      <path d="M137 299H430V509H137V299Z" fill="url(#client)" stroke="#4775A0" stroke-opacity=".8"/>
+      <path d="M137 299H430" stroke="#8CC8FF" stroke-opacity=".3"/>
+      <circle cx="157" cy="279" r="4" fill="#FDA4AF"/>
+      <circle cx="174" cy="279" r="4" fill="#FCD34D"/>
+      <circle cx="191" cy="279" r="4" fill="#6EE7B7"/>
+      <rect x="159" y="330" width="44" height="44" rx="13" fill="#2563EB" fill-opacity=".25" stroke="#60A5FA" stroke-opacity=".55"/>
+      <path d="M181 337L168 343V351C168 360 174 367 181 369C188 367 194 360 194 351V343L181 337Z" stroke="#93C5FD" stroke-width="2"/>
+      <path d="M175 352L179 356L187 347" stroke="#93C5FD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="216" y="349" fill="#F8FAFC" font-size="18" font-weight="700">TruthLens app</text>
+      <text x="216" y="372" fill="#A9BED7" font-size="12">React 18  /  Vite</text>
+      <rect x="160" y="403" width="246" height="1" fill="#7896B7" fill-opacity=".34"/>
+      <circle cx="169" cy="430" r="4" fill="#60A5FA"/>
+      <text x="184" y="435" fill="#DCE8F5" font-size="13">Claim input and credibility reports</text>
+      <circle cx="169" cy="459" r="4" fill="#34D399"/>
+      <text x="184" y="464" fill="#DCE8F5" font-size="13">Authenticated user session</text>
+      <rect x="159" y="479" width="97" height="19" rx="9.5" fill="#1D4ED8" fill-opacity=".32"/>
+      <text x="172" y="493" fill="#BFDBFE" font-size="10" font-weight="700" letter-spacing=".6">WEB CLIENT</text>
+    </g>
+
+    <g>
+      <path d="M679 214L706 196H1080L1107 214V340L1080 358H706L679 340V214Z" fill="#050B14" fill-opacity=".58"/>
+      <path d="M679 214L706 196H1080L1107 214L1080 232H706L679 214Z" fill="#3E4C7A"/>
+      <path d="M1080 214L1107 214V340L1080 358V232V214Z" fill="#101D36" stroke="#58699B"/>
+      <path d="M706 232H1080V358H706V232Z" fill="url(#gemini)" stroke="#596B9D" stroke-opacity=".8"/>
+      <path d="M706 232H1080" stroke="#B3B6FF" stroke-opacity=".3"/>
+      <rect x="733" y="255" width="43" height="43" rx="12" fill="#6366F1" fill-opacity=".25" stroke="#A5B4FC" stroke-opacity=".7"/>
+      <path d="M754 263L757 273L767 276L757 280L754 291L750 280L740 276L750 273L754 263Z" fill="#C7D2FE"/>
+      <text x="795" y="274" fill="#F8FAFC" font-size="18" font-weight="700">Gemini analysis</text>
+      <text x="795" y="296" fill="#BEC8E5" font-size="12">Claim assessment and report generation</text>
+      <rect x="733" y="315" width="131" height="21" rx="10.5" fill="#6366F1" fill-opacity=".22"/>
+      <text x="748" y="329" fill="#C7D2FE" font-size="10" font-weight="700" letter-spacing=".7">OPTIONAL API</text>
+    </g>
+
+    <g>
+      <path d="M679 437L706 419H1080L1107 437V571L1080 589H706L679 571V437Z" fill="#050B14" fill-opacity=".62"/>
+      <path d="M679 437L706 419H1080L1107 437L1080 455H706L679 437Z" fill="#1C615C"/>
+      <path d="M1080 437L1107 437V571L1080 589V455V437Z" fill="#0D292E" stroke="#32857A"/>
+      <path d="M706 455H1080V589H706V455Z" fill="url(#database)" stroke="#32857A" stroke-opacity=".85"/>
+      <path d="M706 455H1080" stroke="#6EE7B7" stroke-opacity=".27"/>
+      <rect x="733" y="478" width="43" height="43" rx="12" fill="#0D9488" fill-opacity=".28" stroke="#5EEAD4" stroke-opacity=".65"/>
+      <ellipse cx="754.5" cy="491" rx="11" ry="4.5" stroke="#99F6E4" stroke-width="1.8"/>
+      <path d="M743.5 491V507C743.5 509.5 748.4 511.5 754.5 511.5S765.5 509.5 765.5 507V491" stroke="#99F6E4" stroke-width="1.8"/>
+      <path d="M743.5 499C743.5 501.5 748.4 503.5 754.5 503.5S765.5 501.5 765.5 499" stroke="#99F6E4" stroke-width="1.5"/>
+      <text x="795" y="496" fill="#F8FAFC" font-size="18" font-weight="700">Supabase</text>
+      <text x="795" y="518" fill="#B8D9D3" font-size="12">Auth  /  Postgres  /  row-level security</text>
+      <rect x="733" y="540" width="132" height="21" rx="10.5" fill="#0D9488" fill-opacity=".24"/>
+      <text x="748" y="554" fill="#99F6E4" font-size="10" font-weight="700" letter-spacing=".7">PRIVATE DATA</text>
+      <text x="891" y="554" fill="#B8D9D3" font-size="11">profiles  ·  analyses</text>
+    </g>
+
+    <g>
+      <rect x="1170" y="238" width="194" height="250" rx="18" fill="url(#panel)" stroke="#45617E"/>
+      <rect x="1170" y="238" width="194" height="4" rx="2" fill="url(#green)"/>
+      <text x="1192" y="277" fill="#A7F3D0" font-size="11" font-weight="700" letter-spacing="1.4">SECURITY</text>
+      <text x="1192" y="311" fill="#F8FAFC" font-size="16" font-weight="700">Private by design</text>
+      <path d="M1192 330H1340" stroke="#60758E" stroke-opacity=".4"/>
+      <circle cx="1198" cy="356" r="4" fill="#34D399"/>
+      <text x="1210" y="360" fill="#D6E3F1" font-size="11">User-scoped reports</text>
+      <circle cx="1198" cy="387" r="4" fill="#34D399"/>
+      <text x="1210" y="391" fill="#D6E3F1" font-size="11">RLS on every table</text>
+      <circle cx="1198" cy="418" r="4" fill="#34D399"/>
+      <text x="1210" y="422" fill="#D6E3F1" font-size="11">No service key in app</text>
+      <rect x="1192" y="449" width="148" height="22" rx="11" fill="#064E3B" fill-opacity=".65"/>
+      <text x="1204" y="464" fill="#A7F3D0" font-size="10" font-weight="700" letter-spacing=".5">TRUSTED DATA BOUNDARY</text>
+    </g>
+
+    <path d="M76 642H1364" stroke="#5D7591" stroke-opacity=".35"/>
+    <text x="78" y="679" fill="#9FB2CA" font-size="12">AUTHENTICATED WORKSPACE</text>
+    <circle cx="300" cy="675" r="3" fill="#64748B"/>
+    <text x="319" y="679" fill="#9FB2CA" font-size="12">CLAIM ANALYSIS</text>
+    <circle cx="467" cy="675" r="3" fill="#64748B"/>
+    <text x="486" y="679" fill="#9FB2CA" font-size="12">OWNER-SCOPED HISTORY</text>
+    <text x="1362" y="679" text-anchor="end" fill="#64748B" font-size="11">TRUTHLENS  /  SYSTEM OVERVIEW</text>
+  </g>
+</svg>

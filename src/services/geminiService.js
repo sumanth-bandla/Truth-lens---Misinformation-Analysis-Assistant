@@ -14,20 +14,7 @@ const MODELS = [
 ];
 
 export function getApiKey() {
-  try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem("truthlens_gemini_api_key") || DEFAULT_API_KEY;
-    }
-  } catch (_) {}
   return DEFAULT_API_KEY;
-}
-
-export function setApiKey(key) {
-  try {
-    if (key && typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem("truthlens_gemini_api_key", key);
-    }
-  } catch (_) {}
 }
 
 /**

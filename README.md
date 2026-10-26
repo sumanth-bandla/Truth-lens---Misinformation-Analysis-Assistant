@@ -1,127 +1,156 @@
-# TruthLens — Misinformation Analysis Assistant
+<div align="center">
 
-> [!IMPORTANT]
-> This project is currently under development. Features and APIs may change.
+# TruthLens
 
-TruthLens is an AI-powered browser extension that helps users detect and understand misinformation by analyzing the credibility of online content in real-time.
+### Misinformation Analysis Assistant
+
+Review online claims, inspect credibility reports, and keep your analysis history with a private account.
+
+[Features](#features) · [Architecture](#architecture) · [Setup](#setup) · [Scripts](#available-scripts) · [Security](#data-and-security)
+
+</div>
+
+<p align="center">
+  <img src="./docs/truthlens-architecture.svg" alt="TruthLens architecture: the React app connects to Gemini for claim analysis and Supabase for authentication and private report storage." width="100%">
+</p>
+
+## Overview
+
+TruthLens is a React web application for analyzing claims and articles. It combines a Gemini-powered analysis workflow with Supabase authentication and per-user report storage.
+
+> Analysis results are informational. Review primary sources and supporting evidence before relying on a verdict.
 
 ## Features
 
-- 🧠 **AI-Powered Analysis**: Uses a local LLM (Ollama) to assess content credibility without sending personal data to third-party servers
-- 🔍 **Real-Time Monitoring**: Automatically analyzes web pages as you browse
-- 🚫 **Proactive Detection**: Warns you when content seems untrustworthy
-- 💡 **Informed Decisions**: Provides detailed explanations and context to help you evaluate information
-- 🌐 **Seamless Integration**: Works quietly in the background with a simple UI
+- **Claim analysis:** Submit a URL or text for a structured credibility report.
+- **Reports:** Review a claim's verdict, score, confidence, metrics, extracted claims, and explanations.
+- **Dashboard and history:** Browse saved reports and export scan history as CSV.
+- **Accounts:** Create an account, sign in, update your display name, and sign out using Supabase Auth.
+- **Private report storage:** Save each user's reports to Supabase Postgres with row-level security.
+- **Administrator view:** Display the account directory to admins; administrator access does not expose other users' analyses.
+- **Source watchlist and extension simulator:** Explore the source-related and browser-extension demonstration screens in the app.
+- **Marketing preview:** View the public-facing landing page and example analysis experience.
 
-## Quick Start
+## Architecture
 
-### Prerequisites
+1. **React + Vite client** renders the landing page, dashboard, analysis flow, reports, history, source watchlist, extension simulator, and account settings.
+2. **Gemini API** processes analysis prompts when `VITE_GEMINI_API_KEY` is configured.
+3. **Supabase Auth** manages email/password sessions and user identity.
+4. **Supabase Postgres** stores profile rows and JSON-formatted analysis reports.
+5. **Row-level security (RLS)** restricts saved analysis access to its owner.
 
-- **Ollama**: Installed and running locally (https://ollama.com/)
-- **Node.js**: Version 16 or higher
-- **npm**: Version 8 or higher
+The [architecture illustration](./docs/truthlens-architecture.svg) shows the app, analysis, storage, and security boundaries.
 
-### Installation
+## Technology
 
-1. **Clone the repository**
+| Area | Technology |
+| --- | --- |
+| Frontend | React 18, Vite 6 |
+| UI icons | Lucide React |
+| Authentication and database | Supabase Auth, Supabase Postgres |
+| Database access | `@supabase/supabase-js` |
+| Claim analysis | Google Gemini API |
 
-```bash
-git clone <repository-url>
-cd TruthLens
-```
+## Setup
 
-2. **Install dependencies**
+### Requirements
+
+- Node.js 18 or later
+- npm
+- A Supabase project
+- A Gemini API key for live analysis
+
+### 1. Install dependencies
 
 ```bash
 npm install
 ```
 
-### Configuration
+### 2. Configure environment variables
 
-1. **Create a `.env` file** in the project root:
-
-```bash
-cp .env.example .env
-```
-
-2. **Edit `.env`** and set your configuration:
+Copy `.env.example` to `.env`, then replace the placeholder values:
 
 ```env
-# Ollama server URL (default: http://localhost:11434)
-OLLAMA_API_URL=http://localhost:11434
-
-# Model to use for analysis (default: llama3)
-OLLAMA_MODEL=llama3
-
-# Confidence threshold (0.0-1.0, default: 0.7)
-# Lower values = more sensitive (warn on less certain content)
-CONFIDENCE_THRESHOLD=0.7
-
-# Enable debug mode (logs more info)
-DEBUG=true
+VITE_SUPABASE_URL=https://dtduvvlhqvnhdwdkcvic.supabase.co
+VITE_SUPABASE_ANON_KEY=your_supabase_publishable_or_anon_key
+VITE_GEMINI_API_KEY=your_gemini_api_key
 ```
 
-## Usage
+The Supabase URL is preconfigured for the project connected to this app. Use the project's publishable/anon key. The local `.env` file is excluded from Git.
 
-### Development
+### 3. Configure Supabase
 
-**Start the extension in development mode**
+The connected project has been provisioned with the required tables and policies. For a new Supabase project, run [`supabase/schema.sql`](./supabase/schema.sql) in the Supabase SQL Editor.
+
+The schema sets up:
+
+- `public.profiles` for account email, display name, and role.
+- `public.analyses` for each user's saved analysis JSON.
+- A trigger to create or synchronize a profile when an Auth user is created or updated.
+- RLS policies and grants for user-scoped data access.
+
+The schema can be run again to re-create or update policies and triggers. It does not delete profile or analysis records.
+
+### 4. Start the development server
 
 ```bash
 npm run dev
 ```
 
-This will:
-1. Start the Ollama server (if not running)
-2. Build the extension
-3. Open browser extension management page with TruthLens loaded
+Open the local URL printed by Vite. Create an account or sign in to use the authenticated app.
 
-**Access the developer dashboard**
+## Available scripts
 
-Open [http://localhost:5173](http://localhost:5173) in your browser
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Vite development server. |
+| `npm run build` | Build the production frontend into `dist/`. |
+| `npm run preview` | Serve the production build locally for preview. |
 
-**Build for production**
+## Administrator access
 
-```bash
-npm run build
+New accounts receive the `user` role. To promote an account, first register it, then run this statement in the Supabase SQL Editor:
+
+```sql
+update public.profiles
+set role = 'admin'
+where email = 'your-account@example.com';
 ```
 
-**Load unpacked extension**
+The account settings page shows the role and, for administrators, the account directory. Change roles through Supabase rather than the client app.
 
-1. Open Chrome/Edge extensions management page
-2. Enable "Developer mode"
-3. Click "Load unpacked"
-4. Select the `dist` folder
+## Data and security
 
-## How It Works
+- Analysis reports are saved as JSON in `public.analyses`, with an owner ID and analysis ID.
+- Authenticated users can access their own analyses; RLS also restricts updates and deletes by owner.
+- The account directory is protected by profile-table RLS and is available to administrators.
+- Admin access to profiles does not grant access to other users' analysis reports.
+- The browser client uses the Supabase publishable/anon key. **Never expose a Supabase service-role key in the frontend or commit secrets.**
+- Gemini prompts are sent to the configured Google Gemini API when live analysis is used.
+- Do not store passwords or API secrets in application tables or report records.
 
-1. **Background Script** monitors tab navigation
-2. **Content Script** analyzes page content (DOM elements)
-3. **Credibility Check** sends content to local Ollama LLM for analysis
-4. **Feedback System** provides warnings/suggestions based on analysis
+## Project structure
 
-## Tech Stack
-
-- **Frontend**: React 18, Vite
-- **Browser Extension**: WebExtension API
-- **LLM**: Ollama (local)
-- **Styling**: Tailwind CSS, CSS
-- **Icons**: Lucide React
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+```text
+.
+├── docs/
+│   └── truthlens-architecture.svg   Architecture illustration
+├── src/
+│   ├── components/                  Shared UI and authentication components
+│   ├── data/                        Example analysis data
+│   ├── services/                    Gemini and Supabase integrations
+│   ├── views/                       Application screens
+│   ├── App.jsx                      Authentication and app view orchestration
+│   ├── index.css                    Application styles
+│   └── main.jsx                     Frontend entry point
+├── supabase/
+│   └── schema.sql                   Database schema, trigger, grants, and RLS
+├── .env.example                     Environment variable template
+├── index.html                       Vite HTML entry point
+├── package.json                     Dependencies and npm scripts
+└── vite.config.js                   Vite configuration
+```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-For issues, feature requests, or questions, please open an issue in the repository.
+This repository does not currently include a license file. Add an appropriate license before redistributing the project.
