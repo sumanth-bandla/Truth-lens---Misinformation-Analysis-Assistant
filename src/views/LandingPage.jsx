@@ -176,7 +176,7 @@ export default function LandingPage({
             </h1>
 
             <p className="hero-desc">
-              TruthLens analyzes online news, social media claims, and articles in real-time. Powered by Gemini 3.1 Flash and local Ollama inference to cross-examine factual claims and protect against disinformation.
+              TruthLens analyzes online news, social media claims, and articles in real-time. Powered by Google Gemini 2.5 Flash to cross-examine factual claims and protect against digital disinformation with sub-second latency.
             </p>
 
             <div className="hero-cta-group">
@@ -499,10 +499,10 @@ export default function LandingPage({
               <Lock size={22} color="#10b981" />
             </div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '8px', color: '#0f172a' }}>
-              Hybrid Private Architecture
+              Real-Time Gemini AI Architecture
             </h3>
             <p style={{ fontSize: '0.92rem', color: '#64748b', lineHeight: 1.6 }}>
-              Switch dynamically between real-time cloud inference (Gemini) and 100% offline local inference (Ollama LLaMA-3).
+              Direct streaming inference powered by Google Generative AI with automated JSON verification and sub-second latency.
             </p>
           </div>
         </div>

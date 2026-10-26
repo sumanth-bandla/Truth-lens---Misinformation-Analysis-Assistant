@@ -124,7 +124,7 @@ export default function ExtensionSimulatorView() {
                       <strong style={{ color: '#0f172a' }}>3 elements</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
-                      <span style={{ color: '#64748b' }}>Ollama Local Inference:</span>
+                      <span style={{ color: '#64748b' }}>Gemini 2.5 Flash Inference:</span>
                       <strong style={{ color: '#10b981' }}>124ms</strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
@@ -153,7 +153,7 @@ export default function ExtensionSimulatorView() {
             </div>
 
             <div style={{ background: '#f8fafc', padding: '10px 16px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: '#64748b' }}>
-              <span>Engine: Ollama localhost:11434</span>
+              <span>Engine: Gemini 2.5 Flash Active</span>
               <span>v1.0.4</span>
             </div>
           </div>

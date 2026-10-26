@@ -309,5 +309,5 @@ export const sampleStats = {
   misinformationRate: "22.8%",
   verifiedAccurate: "64.2%",
   avgAnalysisTime: "180ms",
-  activeModel: "Ollama LLaMA 3 (8B Local)"
+  activeModel: "Gemini 2.5 Flash Real-Time"
 };

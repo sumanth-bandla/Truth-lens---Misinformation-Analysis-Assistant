@@ -37,7 +37,7 @@ export default function AuthModal({ isOpen, onClose }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <CheckCircle2 size={18} color="#34d399" />
-                <span style={{ fontSize: '0.86rem', color: '#e2e8f0' }}>Local Ollama LLM execution support</span>
+                <span style={{ fontSize: '0.86rem', color: '#e2e8f0' }}>Real-time Gemini 2.5 Flash AI inference</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <CheckCircle2 size={18} color="#34d399" />

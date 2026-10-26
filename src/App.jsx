@@ -15,7 +15,7 @@ import SettingsView from './views/SettingsView';
 import { sampleAnalyses } from './data/sampleData';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing');
+  const [currentView, setCurrentView] = useState('settings');
   const [analyses, setAnalyses] = useState(sampleAnalyses);
   const [selectedAnalysisId, setSelectedAnalysisId] = useState('scan-9021');
   const [authModalOpen, setAuthModalOpen] = useState(false);

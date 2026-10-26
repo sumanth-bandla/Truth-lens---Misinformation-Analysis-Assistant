@@ -21,7 +21,7 @@ export default function Sidebar({ currentView, setCurrentView, onOpenAuth }) {
     { id: 'sources', label: 'Source Watchlist', icon: ShieldAlert },
     { id: 'history', label: 'Scan History', icon: History },
     { id: 'extension', label: 'Browser Extension', icon: Puzzle },
-    { id: 'settings', label: 'Settings & Ollama', icon: Settings },
+    { id: 'settings', label: 'Settings & AI Engine', icon: Settings },
   ];
 
   return (
