@@ -52,27 +52,52 @@ export default function Sidebar({ currentView, setCurrentView, onOpenAuth }) {
       <div style={{ padding: '12px 16px 0' }}>
         <div
           style={{
-            backgroundColor: 'rgba(37, 99, 235, 0.15)',
-            border: '1px solid rgba(59, 130, 246, 0.3)',
-            borderRadius: '8px',
-            padding: '8px 12px',
+            backgroundColor: 'rgba(37, 99, 235, 0.12)',
+            border: '1px solid rgba(59, 130, 246, 0.28)',
+            borderRadius: '10px',
+            padding: '10px 12px',
             display: 'flex',
             alignItems: 'center',
-            gap: '8px'
+            gap: '10px',
+            backdropFilter: 'blur(8px)'
           }}
         >
           <span
             style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: '#10b981',
-              boxShadow: '0 0 8px #10b981'
+              position: 'relative',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '10px',
+              height: '10px'
             }}
-          />
+          >
+            <span
+              style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                backgroundColor: '#10b981',
+                animation: 'pulse 1.8s infinite'
+              }}
+            />
+            <span
+              style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                backgroundColor: '#10b981'
+              }}
+            />
+          </span>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.72rem', color: '#93c5fd', fontWeight: 700 }}>Gemini 3.1 Flash AI</span>
-            <span style={{ fontSize: '0.65rem', color: '#34d399' }}>Real-Time Engine Active</span>
+            <span style={{ fontSize: '0.74rem', color: '#93c5fd', fontWeight: 800, letterSpacing: '0.02em' }}>
+              Gemini 2.5 Flash
+            </span>
+            <span style={{ fontSize: '0.66rem', color: '#34d399', fontWeight: 600 }}>
+              Live AI Inference Active
+            </span>
           </div>
         </div>
       </div>

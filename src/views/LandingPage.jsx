@@ -365,6 +365,87 @@ export default function LandingPage({
         </div>
       </section>
 
+      {/* Interactive Misinformation vs Verified Comparison Showcase */}
+      <section style={{ backgroundColor: '#f8fafc', padding: '80px 36px', borderTop: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 40px' }}>
+            <span className="badge badge-info" style={{ marginBottom: '10px' }}>
+              <Sparkles size={12} /> Side-by-Side Deep Analysis
+            </span>
+            <h2 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.02em', marginBottom: '12px' }}>
+              Deceptive Clickbait vs. Corroborated Reality
+            </h2>
+            <p style={{ fontSize: '1rem', color: '#64748b' }}>
+              How TruthLens breaks down rhetoric, syntactic sensation, and missing evidence in milliseconds:
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
+            {/* Misinformation Card */}
+            <div
+              className="card"
+              style={{
+                border: '1px solid #fecaca',
+                background: 'linear-gradient(180deg, #ffffff 0%, #fef2f2 100%)',
+                position: 'relative'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <span className="badge badge-false">
+                  <XCircle size={13} /> High Risk — 18/100
+                </span>
+                <span style={{ fontSize: '0.74rem', color: '#dc2626', fontWeight: 700 }}>Fabrication & Clickbait</span>
+              </div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#991b1b', marginBottom: '10px' }}>
+                "Miracle rare berry reverses cellular aging by 20 years in 48 hours"
+              </h3>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem', color: '#7f1d1d' }}>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <XCircle size={14} color="#ef4444" /> Zero peer-reviewed clinical citations found on PubMed.
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <XCircle size={14} color="#ef4444" /> Extreme sensationalist framing & urgency markers.
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <XCircle size={14} color="#ef4444" /> Domain registered 3 weeks ago on anonymous registrar.
+                </li>
+              </ul>
+            </div>
+
+            {/* Verified Fact Card */}
+            <div
+              className="card"
+              style={{
+                border: '1px solid #a7f3d0',
+                background: 'linear-gradient(180deg, #ffffff 0%, #ecfdf5 100%)',
+                position: 'relative'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <span className="badge badge-verified">
+                  <CheckCircle2 size={13} /> Verified — 98/100
+                </span>
+                <span style={{ fontSize: '0.74rem', color: '#047857', fontWeight: 700 }}>Institutional Consensus</span>
+              </div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, color: '#065f46', marginBottom: '10px' }}>
+                "ESA confirms deployment of Sentinel-7 greenhouse gas monitoring satellite"
+              </h3>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '0.85rem', color: '#064e3b' }}>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={14} color="#10b981" /> Official press release published on European Space Agency.
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={14} color="#10b981" /> Orbital telemetry confirmed by Nature Astronomy.
+                </li>
+                <li style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CheckCircle2 size={14} color="#10b981" /> Cross-referenced wire coverage from Reuters & AP News.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Grid */}
       <section id="features" style={{ padding: '80px 36px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ textAlign: 'center', maxWidth: '680px', margin: '0 auto 50px' }}>
@@ -385,7 +466,7 @@ export default function LandingPage({
               Real-Time Generative Fact Engine
             </h3>
             <p style={{ fontSize: '0.92rem', color: '#64748b', lineHeight: 1.6 }}>
-              Powered by high-throughput Gemini 3.1 Flash AI. Evaluates factual claims against international knowledge baselines in sub-second latency.
+              Powered by high-throughput Gemini 2.5 Flash AI. Evaluates factual claims against international knowledge baselines in sub-second latency.
             </p>
           </div>
 
