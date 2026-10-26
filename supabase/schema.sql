@@ -2,9 +2,13 @@ create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
   email text not null,
   display_name text not null default '',
+  avatar_url text,
   role text not null default 'user' check (role in ('user', 'admin')),
   created_at timestamptz not null default now()
 );
+
+alter table public.profiles
+  add column if not exists avatar_url text;
 
 create table if not exists public.analyses (
   id uuid primary key default gen_random_uuid(),
@@ -59,7 +63,7 @@ alter table public.analyses enable row level security;
 
 revoke all on table public.profiles from anon, authenticated;
 grant select on table public.profiles to authenticated;
-grant update (display_name) on table public.profiles to authenticated;
+grant update (display_name, avatar_url) on table public.profiles to authenticated;
 
 drop policy if exists "Users and admins can read profiles" on public.profiles;
 create policy "Users and admins can read profiles"

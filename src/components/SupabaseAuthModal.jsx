@@ -1,6 +1,45 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Lock, Mail, Shield } from 'lucide-react';
-import { supabase, supabaseConfigured } from '../services/supabaseClient';
+import {
+  supabase,
+  supabaseConfigured,
+  supabaseConfigurationError
+} from '../services/supabaseClient';
+
+function getAuthErrorMessage(error, isSignUp) {
+  const message = error?.message?.toLowerCase() || '';
+  const code = error?.code?.toLowerCase() || '';
+
+  if (
+    error instanceof TypeError ||
+    message.includes('failed to fetch') ||
+    message.includes('network') ||
+    message.includes('timeout')
+  ) {
+    return 'Could not reach Supabase. Check your internet connection and Supabase project URL, then try again.';
+  }
+
+  if (code === 'email_not_confirmed' || message.includes('email not confirmed')) {
+    return 'Please confirm your email using the link we sent before signing in.';
+  }
+
+  if (
+    !isSignUp &&
+    (code === 'invalid_credentials' || message.includes('invalid login credentials'))
+  ) {
+    return 'Email or password is incorrect. Check your details and try again.';
+  }
+
+  if (isSignUp && (code === 'user_already_exists' || message.includes('already registered'))) {
+    return 'We could not create this account. If you already registered, sign in or use another email address.';
+  }
+
+  if (message.includes('password')) {
+    return 'The password was rejected. Use a valid password and try again.';
+  }
+
+  return error?.message || 'Authentication could not be completed. Please try again.';
+}
 
 export default function SupabaseAuthModal({ initialError = '' }) {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -19,32 +58,62 @@ export default function SupabaseAuthModal({ initialError = '' }) {
     event.preventDefault();
     setError('');
     setMessage('');
+
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Enter a valid email address.');
+      return;
+    }
+    if (isSignUp && !displayName.trim()) {
+      setError('Enter your name to create an account.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Your password must be at least 8 characters.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
       if (!supabase) {
-        throw new Error('Supabase is not configured. Add your project URL and publishable key to the local .env file.');
+        throw new Error(supabaseConfigurationError || 'Supabase is not configured.');
       }
 
       if (isSignUp) {
         const { data, error: authError } = await supabase.auth.signUp({
-          email: email.trim(),
+          email: normalizedEmail,
           password,
-          options: { data: { display_name: displayName.trim() } }
+          options: {
+            data: { display_name: displayName.trim() },
+            emailRedirectTo: window.location.origin
+          }
         });
         if (authError) throw authError;
-        if (!data.session) {
+        if (!data.user) {
+          throw new Error('Supabase did not return an account. Please try again.');
+        }
+        if (!data.session && data.user.identities?.length === 0) {
+          setMessage('We could not start registration. If you already have an account, sign in instead.');
+          return;
+        }
+        if (data.session) {
+          setMessage('Account created and signed in.');
+        } else {
           setMessage('Account created. Check your email to confirm your address, then sign in.');
         }
       } else {
-        const { error: authError } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email: normalizedEmail,
           password
         });
         if (authError) throw authError;
+        if (!data.session) {
+          throw new Error('Supabase did not start a sign-in session. Please try again.');
+        }
       }
     } catch (authError) {
-      setError(authError.message || 'Unable to authenticate. Please try again.');
+      setError(getAuthErrorMessage(authError, isSignUp));
     } finally {
       setSubmitting(false);
     }
@@ -70,13 +139,13 @@ export default function SupabaseAuthModal({ initialError = '' }) {
 
           {!supabaseConfigured && (
             <div role="alert" className="account-message account-message-error" style={{ marginBottom: '16px' }}>
-              Add the Supabase publishable/anon key to `.env`. The project URL is already configured.
+              {supabaseConfigurationError}
             </div>
           )}
           {error && <div role="alert" className="account-message account-message-error">{error}</div>}
           {message && <div role="status" className="account-message account-message-success">{message}</div>}
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <form noValidate onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {isSignUp && (
               <label className="account-field">
                 <span>Name</span>
@@ -84,9 +153,11 @@ export default function SupabaseAuthModal({ initialError = '' }) {
                   type="text"
                   autoComplete="name"
                   required
+                  maxLength={80}
                   value={displayName}
                   onChange={(event) => setDisplayName(event.target.value)}
                   placeholder="Your name"
+                  disabled={submitting}
                 />
               </label>
             )}
@@ -102,6 +173,7 @@ export default function SupabaseAuthModal({ initialError = '' }) {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="you@example.com"
+                  disabled={submitting}
                 />
               </div>
             </label>
@@ -118,6 +190,7 @@ export default function SupabaseAuthModal({ initialError = '' }) {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="At least 8 characters"
+                  disabled={submitting}
                 />
               </div>
             </label>
@@ -132,6 +205,7 @@ export default function SupabaseAuthModal({ initialError = '' }) {
             {isSignUp ? 'Already have an account?' : 'New to TruthLens?'}{' '}
             <button
               type="button"
+              disabled={submitting}
               onClick={() => {
                 setIsSignUp((value) => !value);
                 setError('');

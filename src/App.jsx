@@ -154,9 +154,14 @@ export default function App() {
     if (error) throw error;
   };
 
-  const handleUpdateProfile = async (displayName) => {
-    const updatedProfile = await updateProfile(user.id, displayName);
+  const handleUpdateProfile = async (displayName, avatarUrl) => {
+    const updatedProfile = await updateProfile(user.id, displayName, avatarUrl);
     setProfile(updatedProfile);
+  };
+
+  const handleChangePassword = async (password) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
   };
 
   const handleLoadAdminProfiles = useCallback(() => fetchAdminProfiles(), []);
@@ -252,6 +257,7 @@ export default function App() {
             profile={profile}
             onSignOut={handleSignOut}
             onUpdateProfile={handleUpdateProfile}
+            onChangePassword={handleChangePassword}
             onLoadAdminProfiles={handleLoadAdminProfiles}
           />
         )}
