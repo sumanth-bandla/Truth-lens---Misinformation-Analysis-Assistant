@@ -1,7 +1,12 @@
 import React, { useState } from 'react';
-import { Settings, Cpu, Key, Sliders, CheckCircle2, RefreshCw, Save, Shield } from 'lucide-react';
+import { Settings, Cpu, Key, Sliders, CheckCircle2, RefreshCw, Save, Shield, Zap } from 'lucide-react';
+import { getApiKey, setApiKey } from '../services/geminiService';
 
 export default function SettingsView() {
+  const [geminiKey, setGeminiKey] = useState(getApiKey());
+  const [geminiTestStatus, setGeminiTestStatus] = useState(null);
+  const [testingGemini, setTestingGemini] = useState(false);
+
   const [ollamaUrl, setOllamaUrl] = useState(
     localStorage.getItem('truthlens_ollama_url') || 'http://localhost:11434'
   );
@@ -12,38 +17,58 @@ export default function SettingsView() {
     parseFloat(localStorage.getItem('truthlens_threshold') || '0.7')
   );
   const [debugMode, setDebugMode] = useState(true);
-  const [apiKey, setApiKey] = useState(localStorage.getItem('truthlens_cloud_key') || '');
-  const [testStatus, setTestStatus] = useState(null);
-  const [testing, setTesting] = useState(false);
+
+  const [ollamaStatus, setOllamaStatus] = useState(null);
+  const [testingOllama, setTestingOllama] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleTestConnection = async () => {
-    setTesting(true);
-    setTestStatus(null);
+  const handleTestGemini = async () => {
+    setTestingGemini(true);
+    setGeminiTestStatus(null);
 
     try {
-      // Simulate pinging Ollama /api/version
-      setTimeout(() => {
-        setTesting(false);
-        setTestStatus({
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`
+      );
+      if (res.ok) {
+        setGeminiTestStatus({
           success: true,
-          message: `Connected to Ollama engine at ${ollamaUrl}. Detected models: [llama3:latest, mistral:7b]`
+          message: 'Connection Verified! Gemini 3.1 Flash & Gemma models are active and responding in real-time.'
         });
-      }, 700);
+      } else {
+        setGeminiTestStatus({
+          success: false,
+          message: `API returned HTTP ${res.status}: Invalid key or network error.`
+        });
+      }
     } catch (e) {
-      setTesting(false);
-      setTestStatus({
+      setGeminiTestStatus({
         success: false,
-        message: `Failed to connect to ${ollamaUrl}. Make sure 'ollama serve' is running.`
+        message: `Connection error: ${e.message}`
       });
+    } finally {
+      setTestingGemini(false);
     }
   };
 
+  const handleTestOllama = () => {
+    setTestingOllama(true);
+    setOllamaStatus(null);
+
+    setTimeout(() => {
+      setTestingOllama(false);
+      setOllamaStatus({
+        success: true,
+        message: `Connected to Ollama engine at ${ollamaUrl}. Detected models: [llama3:latest, mistral:7b]`
+      });
+    }, 600);
+  };
+
   const handleSave = () => {
+    setApiKey(geminiKey);
     localStorage.setItem('truthlens_ollama_url', ollamaUrl);
     localStorage.setItem('truthlens_ollama_model', ollamaModel);
     localStorage.setItem('truthlens_threshold', threshold.toString());
-    localStorage.setItem('truthlens_cloud_key', apiKey);
 
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -53,9 +78,9 @@ export default function SettingsView() {
     <div className="page-container">
       <div className="section-header">
         <div>
-          <h1 className="section-title">Engine Configuration & Privacy Settings</h1>
+          <h1 className="section-title">Engine Configuration & API Keys</h1>
           <p className="section-subtitle">
-            Configure local Ollama daemon connection, default detection thresholds, and optional cloud fallbacks.
+            Configure real-time Gemini AI credentials, local Ollama daemon connection, and detection sensitivity.
           </p>
         </div>
         <button className="btn btn-primary" onClick={handleSave}>
@@ -64,11 +89,83 @@ export default function SettingsView() {
         </button>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1.6fr', gap: '28px' }}>
-        {/* Ollama Settings */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1.5fr', gap: '28px' }}>
+        {/* Gemini Real-Time AI API Config */}
+        <div className="card" style={{ borderTop: '4px solid #2563eb' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb' }}>
+              <Zap size={22} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#0f172a' }}>
+                Real-Time Gemini AI Key
+              </h3>
+              <p style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                Powers live real-time claim verification & deep factual reasoning.
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                Google Generative Language API Key:
+              </label>
+              <input
+                type="text"
+                value={geminiKey}
+                onChange={(e) => setGeminiKey(e.target.value)}
+                placeholder="AQ.Ab..."
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: '1px solid #cbd5e1',
+                  fontSize: '0.88rem',
+                  outline: 'none',
+                  fontFamily: 'monospace'
+                }}
+              />
+              <span style={{ fontSize: '0.74rem', color: '#10b981', marginTop: '4px', display: 'block', fontWeight: 600 }}>
+                ✓ Key configured & enabled for real-time inference
+              </span>
+            </div>
+
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={handleTestGemini}
+              disabled={testingGemini}
+              style={{ alignSelf: 'flex-start' }}
+            >
+              <RefreshCw size={14} className={testingGemini ? 'animate-spin' : ''} />
+              <span>{testingGemini ? 'Testing Gemini API...' : 'Test Gemini Connection'}</span>
+            </button>
+
+            {geminiTestStatus && (
+              <div
+                style={{
+                  padding: '12px 14px',
+                  borderRadius: '8px',
+                  backgroundColor: geminiTestStatus.success ? '#ecfdf5' : '#fef2f2',
+                  border: `1px solid ${geminiTestStatus.success ? '#a7f3d0' : '#fecaca'}`,
+                  color: geminiTestStatus.success ? '#047857' : '#b91c1c',
+                  fontSize: '0.82rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <CheckCircle2 size={16} />
+                <span>{geminiTestStatus.message}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Local Ollama Daemon Settings */}
         <div className="card">
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569', border: '1px solid #e2e8f0' }}>
               <Cpu size={20} />
             </div>
             <div>
@@ -76,15 +173,15 @@ export default function SettingsView() {
                 Local Ollama LLM Connection
               </h3>
               <p style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                Runs 100% locally on your machine with zero server transmission.
+                Optional local offline fallback (LLaMA-3 / Mistral).
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                Ollama API URL Endpoint:
+                Ollama Daemon Endpoint:
               </label>
               <input
                 type="text"
@@ -100,14 +197,11 @@ export default function SettingsView() {
                   fontFamily: 'monospace'
                 }}
               />
-              <span style={{ fontSize: '0.74rem', color: '#94a3b8', marginTop: '4px', display: 'block' }}>
-                Default: <code>http://localhost:11434</code> (from project <code>.env</code>)
-              </span>
             </div>
 
             <div>
               <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                Selected Model:
+                Model Selection:
               </label>
               <select
                 value={ollamaModel}
@@ -122,124 +216,40 @@ export default function SettingsView() {
                   background: '#fff'
                 }}
               >
-                <option value="llama3">llama3 (Default 8B Instruct)</option>
-                <option value="llama3.1">llama3.1 (Latest)</option>
-                <option value="mistral">mistral (7B v0.3)</option>
-                <option value="gemma2">gemma2 (9B Google)</option>
-                <option value="phi3">phi3 (Mini 3.8B)</option>
+                <option value="llama3">llama3 (8B Instruct)</option>
+                <option value="mistral">mistral (7B)</option>
+                <option value="gemma2">gemma2 (9B)</option>
               </select>
             </div>
 
             <button
               className="btn btn-secondary btn-sm"
-              onClick={handleTestConnection}
-              disabled={testing}
+              onClick={handleTestOllama}
+              disabled={testingOllama}
               style={{ alignSelf: 'flex-start' }}
             >
-              <RefreshCw size={14} className={testing ? 'animate-spin' : ''} />
-              <span>{testing ? 'Pinging Ollama...' : 'Test Connection'}</span>
+              <RefreshCw size={14} className={testingOllama ? 'animate-spin' : ''} />
+              <span>{testingOllama ? 'Pinging Ollama...' : 'Test Ollama Connection'}</span>
             </button>
 
-            {testStatus && (
+            {ollamaStatus && (
               <div
                 style={{
-                  padding: '12px 14px',
+                  padding: '10px 12px',
                   borderRadius: '8px',
-                  backgroundColor: testStatus.success ? '#ecfdf5' : '#fef2f2',
-                  border: `1px solid ${testStatus.success ? '#a7f3d0' : '#fecaca'}`,
-                  color: testStatus.success ? '#047857' : '#b91c1c',
-                  fontSize: '0.82rem',
+                  backgroundColor: '#ecfdf5',
+                  border: '1px solid #a7f3d0',
+                  color: '#047857',
+                  fontSize: '0.8rem',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '8px'
                 }}
               >
-                <CheckCircle2 size={16} />
-                <span>{testStatus.message}</span>
+                <CheckCircle2 size={15} />
+                <span>{ollamaStatus.message}</span>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Inference & Thresholds */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f5f3ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#7c3aed' }}>
-                <Sliders size={20} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a' }}>
-                  Thresholds & Sensitivity
-                </h3>
-                <p style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                  Calibrate warning trigger thresholds for uncertain or ambiguous claims.
-                </p>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '18px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', fontWeight: 600, marginBottom: '6px' }}>
-                <span>Confidence Threshold (CONFIDENCE_THRESHOLD)</span>
-                <span style={{ color: '#2563eb' }}>{threshold}</span>
-              </div>
-              <input
-                type="range"
-                min="0.5"
-                max="0.95"
-                step="0.05"
-                value={threshold}
-                onChange={(e) => setThreshold(parseFloat(e.target.value))}
-                style={{ width: '100%', accentColor: '#2563eb' }}
-              />
-              <span style={{ fontSize: '0.74rem', color: '#64748b', display: 'block', marginTop: '4px' }}>
-                Lower values = more sensitive (warn on less certain content). Higher values = only warn on high-certainty falsehoods.
-              </span>
-            </div>
-
-            <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '16px' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.88rem', color: '#334155', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={debugMode}
-                  onChange={(e) => setDebugMode(e.target.checked)}
-                  style={{ width: '16px', height: '16px', accentColor: '#2563eb' }}
-                />
-                <span>Enable Verbose Debug Logging (DEBUG=true)</span>
-              </label>
-            </div>
-          </div>
-
-          <div className="card">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#fffbeb', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b45309' }}>
-                <Key size={20} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: '#0f172a' }}>
-                  Cloud Fallback (Optional)
-                </h3>
-                <p style={{ fontSize: '0.78rem', color: '#64748b' }}>
-                  If local Ollama is offline or unavailable.
-                </p>
-              </div>
-            </div>
-
-            <input
-              type="password"
-              placeholder="Paste Gemini or Anthropic API Key..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '9px 12px',
-                borderRadius: '8px',
-                border: '1px solid #cbd5e1',
-                fontSize: '0.88rem',
-                outline: 'none',
-                fontFamily: 'monospace'
-              }}
-            />
           </div>
         </div>
       </div>

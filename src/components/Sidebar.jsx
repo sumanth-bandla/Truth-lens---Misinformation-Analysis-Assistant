@@ -71,8 +71,8 @@ export default function Sidebar({ currentView, setCurrentView, onOpenAuth }) {
             }}
           />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.72rem', color: '#93c5fd', fontWeight: 700 }}>Ollama Local Engine</span>
-            <span style={{ fontSize: '0.65rem', color: '#94a3b8' }}>LLaMA-3 Model Active</span>
+            <span style={{ fontSize: '0.72rem', color: '#93c5fd', fontWeight: 700 }}>Gemini 3.1 Flash AI</span>
+            <span style={{ fontSize: '0.65rem', color: '#34d399' }}>Real-Time Engine Active</span>
           </div>
         </div>
       </div>

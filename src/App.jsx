@@ -32,8 +32,13 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleScanComplete = (analysisId) => {
-    setSelectedAnalysisId(analysisId);
+  const handleScanComplete = (resultOrId) => {
+    if (typeof resultOrId === 'object' && resultOrId?.id) {
+      setAnalyses((prev) => [resultOrId, ...prev.filter((a) => a.id !== resultOrId.id)]);
+      setSelectedAnalysisId(resultOrId.id);
+    } else {
+      setSelectedAnalysisId(resultOrId);
+    }
     setCurrentView('report');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -50,6 +55,7 @@ export default function App() {
           onLaunchApp={(view = 'dashboard') => setCurrentView(view)}
           onOpenAuth={() => setAuthModalOpen(true)}
           onSelectSample={handleSelectSample}
+          onScanComplete={handleScanComplete}
         />
         <AuthModal
           isOpen={authModalOpen}
@@ -98,6 +104,11 @@ export default function App() {
             analyses={analyses}
             onSelectAnalysis={(id) => setSelectedAnalysisId(id)}
             onBack={() => setCurrentView('dashboard')}
+            onUpdateAnalysis={(updated) => {
+              setAnalyses((prev) => [updated, ...prev.filter((a) => a.id !== updated.id)]);
+              setSelectedAnalysisId(updated.id);
+            }}
+            onRescan={(query) => handleNavigate('analyze', { initialUrl: query })}
           />
         )}
 

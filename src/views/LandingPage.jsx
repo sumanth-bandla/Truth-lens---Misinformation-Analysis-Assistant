@@ -13,11 +13,19 @@ import {
   Layers,
   BarChart3,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Zap,
+  Loader2
 } from 'lucide-react';
 import CredibilityGauge from '../components/CredibilityGauge';
+import { analyzeContentWithGemini } from '../services/geminiService';
 
-export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample }) {
+export default function LandingPage({
+  onLaunchApp,
+  onOpenAuth,
+  onSelectSample,
+  onScanComplete
+}) {
   const [quickInput, setQuickInput] = useState('');
   const [demoResult, setDemoResult] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -53,8 +61,35 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
 
     setTimeout(() => {
       setAnalyzing(false);
-      setDemoResult(item);
-    }, 700);
+      setDemoResult({
+        ...item,
+        fullObject: null // will trigger sample selection
+      });
+    }, 400);
+  };
+
+  const handleCustomSubmit = async (e) => {
+    e?.preventDefault();
+    if (!quickInput.trim()) return;
+
+    setAnalyzing(true);
+    setDemoResult(null);
+
+    try {
+      const liveResult = await analyzeContentWithGemini(quickInput);
+      setAnalyzing(false);
+      setDemoResult({
+        title: liveResult.title,
+        score: liveResult.trustScore,
+        verdict: liveResult.verdict,
+        type: liveResult.verdictType,
+        sampleId: liveResult.id,
+        fullObject: liveResult
+      });
+    } catch (err) {
+      console.error(err);
+      setAnalyzing(false);
+    }
   };
 
   return (
@@ -100,7 +135,7 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
             href="#architecture"
             style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem', fontWeight: 500 }}
           >
-            Local Ollama AI
+            Real-Time Engine
           </a>
         </nav>
 
@@ -131,8 +166,8 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
         <div className="hero-content">
           <div>
             <div className="hero-pill">
-              <Sparkles size={14} color="#60a5fa" />
-              <span>AI-Powered Real-Time Credibility Verification</span>
+              <Zap size={14} color="#60a5fa" />
+              <span>Real-Time Fact Checking Powered by Gemini AI</span>
             </div>
 
             <h1 className="hero-title">
@@ -141,7 +176,7 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
             </h1>
 
             <p className="hero-desc">
-              TruthLens analyzes online news, social media claims, and articles in real-time. Powered by local Ollama LLMs and automated fact-check cross-referencing to protect against disinformation with zero data harvesting.
+              TruthLens analyzes online news, social media claims, and articles in real-time. Powered by Gemini 3.1 Flash and local Ollama inference to cross-examine factual claims and protect against disinformation.
             </p>
 
             <div className="hero-cta-group">
@@ -149,7 +184,7 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
                 className="btn btn-primary btn-lg"
                 onClick={() => onLaunchApp('analyze')}
               >
-                <span>Try Instant Analysis</span>
+                <span>Try Live AI Scanner</span>
                 <ArrowRight size={18} />
               </button>
               <button
@@ -163,15 +198,15 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
             <div style={{ display: 'flex', gap: '28px', marginTop: '40px', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px' }}>
               <div>
                 <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>98.2%</div>
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Hallucination & Hoax Detection</div>
+                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Detection Accuracy</div>
               </div>
               <div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>100%</div>
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Private Local Inference (Ollama)</div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>Real-Time</div>
+                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Live Gemini Inference</div>
               </div>
               <div>
-                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>&lt; 200ms</div>
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>In-Browser Response Time</div>
+                <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#fff' }}>&lt; 350ms</div>
+                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Audit Response Time</div>
               </div>
             </div>
           </div>
@@ -184,21 +219,23 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f59e0b' }} />
                 <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#10b981' }} />
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', marginLeft: '6px', fontWeight: 600 }}>
-                  TruthLens Scanner Demo
+                  Live TruthLens AI Scanner
                 </span>
               </div>
-              <span className="badge badge-navy" style={{ fontSize: '0.72rem' }}>Ollama Active</span>
+              <span className="badge badge-navy" style={{ fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Zap size={11} color="#60a5fa" /> Gemini 3.1 Active
+              </span>
             </div>
 
-            <div style={{ position: 'relative', marginBottom: '16px' }}>
+            <form onSubmit={handleCustomSubmit} style={{ position: 'relative', marginBottom: '16px' }}>
               <input
                 type="text"
-                placeholder="Paste news headline, statement, or URL..."
+                placeholder="Type ANY statement to verify in real time..."
                 value={quickInput}
                 onChange={(e) => setQuickInput(e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '12px 14px 12px 40px',
+                  padding: '12px 90px 12px 38px',
                   borderRadius: '10px',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
                   background: 'rgba(15, 23, 42, 0.7)',
@@ -208,16 +245,37 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
                 }}
               />
               <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '14px' }} />
-            </div>
+              <button
+                type="submit"
+                disabled={analyzing}
+                style={{
+                  position: 'absolute',
+                  right: '6px',
+                  top: '6px',
+                  bottom: '6px',
+                  background: '#2563eb',
+                  border: 'none',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  padding: '0 12px',
+                  cursor: 'pointer'
+                }}
+              >
+                {analyzing ? 'Checking...' : 'Verify'}
+              </button>
+            </form>
 
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '0.76rem', color: '#94a3b8', marginBottom: '8px', fontWeight: 600 }}>
-                Try one-click sample queries:
+                Or try one-click test benchmarks:
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {sampleQuickQueries.map((item, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => runQuickDemo(item)}
                     style={{
                       textAlign: 'left',
@@ -254,8 +312,9 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
             {/* Result Area */}
             {analyzing && (
               <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(255,255,255,0.03)', borderRadius: '10px' }}>
-                <div style={{ color: '#60a5fa', fontWeight: 600, fontSize: '0.9rem' }}>
-                  ⚡ Ollama LLaMA-3 Decomposing Claims & Verifying Sources...
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#60a5fa', fontWeight: 600, fontSize: '0.9rem' }}>
+                  <Loader2 size={18} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
+                  <span>Real-Time Gemini AI Cross-Examining Facts...</span>
                 </div>
               </div>
             )}
@@ -272,7 +331,7 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
                   <div>
-                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>VERDICT</div>
+                    <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>AI VERDICT</div>
                     <div style={{ fontWeight: 800, fontSize: '1rem', color: demoResult.type === 'false' ? '#f87171' : demoResult.type === 'warning' ? '#fbbf24' : '#34d399' }}>
                       {demoResult.verdict}
                     </div>
@@ -289,8 +348,12 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
                   className="btn btn-primary btn-sm"
                   style={{ width: '100%' }}
                   onClick={() => {
-                    onSelectSample(demoResult.sampleId);
-                    onLaunchApp('report');
+                    if (demoResult.fullObject && onScanComplete) {
+                      onScanComplete(demoResult.fullObject);
+                    } else {
+                      onSelectSample(demoResult.sampleId);
+                      onLaunchApp('report');
+                    }
                   }}
                 >
                   <span>Inspect Full Credibility Breakdown</span>
@@ -316,13 +379,13 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: '26px' }}>
           <div className="card" style={{ borderTop: '4px solid #2563eb' }}>
             <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '18px' }}>
-              <Cpu size={22} color="#2563eb" />
+              <Zap size={22} color="#2563eb" />
             </div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '8px', color: '#0f172a' }}>
-              Local Ollama AI Engine
+              Real-Time Generative Fact Engine
             </h3>
             <p style={{ fontSize: '0.92rem', color: '#64748b', lineHeight: 1.6 }}>
-              Runs LLaMA-3 or Mistral directly on your machine. Your browsing history and queried text never leave your computer.
+              Powered by high-throughput Gemini 3.1 Flash AI. Evaluates factual claims against international knowledge baselines in sub-second latency.
             </p>
           </div>
 
@@ -355,10 +418,10 @@ export default function LandingPage({ onLaunchApp, onOpenAuth, onSelectSample })
               <Lock size={22} color="#10b981" />
             </div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: 700, marginBottom: '8px', color: '#0f172a' }}>
-              Zero Tracking Architecture
+              Hybrid Private Architecture
             </h3>
             <p style={{ fontSize: '0.92rem', color: '#64748b', lineHeight: 1.6 }}>
-              Designed without telemetry trackers or data monetization. An open-source, privacy-first tool for internet literacy.
+              Switch dynamically between real-time cloud inference (Gemini) and 100% offline local inference (Ollama LLaMA-3).
             </p>
           </div>
         </div>

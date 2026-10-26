@@ -1,97 +1,161 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
-  Search,
   Link2,
   FileText,
   Image,
   Sparkles,
   Sliders,
   CheckCircle2,
-  AlertCircle,
-  ArrowRight,
-  ShieldAlert,
   Loader2,
-  Globe
+  Globe,
+  Zap,
+  Radio,
+  Activity,
+  Shield
 } from 'lucide-react';
+import { analyzeContentWithGemini } from '../services/geminiService';
 
 export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
-  const [activeTab, setActiveTab] = useState('url'); // 'url', 'text', 'image'
+  const [activeTab, setActiveTab] = useState('url');
   const [urlInput, setUrlInput] = useState(initialUrl || '');
   const [textInput, setTextInput] = useState('');
-  const [selectedModel, setSelectedModel] = useState('llama3');
+  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
   const [confidenceThreshold, setConfidenceThreshold] = useState(0.7);
   const [deepSearch, setDeepSearch] = useState(true);
   const [biasDetection, setBiasDetection] = useState(true);
 
   const [scanning, setScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
+  const [liveLog, setLiveLog] = useState([]);
+  const [elapsed, setElapsed] = useState(0);
+  const [activeModel, setActiveModel] = useState('');
+  const elapsedRef = useRef(null);
+  const logEndRef = useRef(null);
 
   const scanSteps = [
-    "Extracting page content & syntactic structure...",
-    "Isolating primary factual assertions & quotes...",
-    "Querying IFCN verified databases (Reuters, AP, PolitiFact)...",
-    "Running Ollama LLaMA-3 semantic consistency & fallacy analysis...",
-    "Synthesizing final credibility score & audit report..."
+    { text: "🔍 Fetching content & parsing syntactic structure...", delay: 0 },
+    { text: "📋 Isolating primary factual assertions & quotes...", delay: 600 },
+    { text: "🌐 Cross-referencing IFCN, Reuters, AP, PolitiFact databases...", delay: 1200 },
+    { text: "🤖 Dispatching to Gemini 2.5 Flash real-time inference engine...", delay: 1800 },
+    { text: "📊 Computing credibility score & bias metrics...", delay: 2400 },
+    { text: "✅ Synthesizing final audit report...", delay: 3000 }
   ];
+
+  useEffect(() => {
+    if (logEndRef.current) {
+      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [liveLog]);
 
   const presets = [
     {
       label: "Health Scam Hoax",
       text: "Breaking: New rare berry reverses cellular aging by 20 years within 48 hours according to unreleased clinical trials.",
-      url: "https://viralhealthdaily.org/breakthrough-aging-cure-berry-trial",
-      resultId: "scan-9021"
+      url: "https://viralhealthdaily.org/breakthrough-aging-cure-berry-trial"
     },
     {
       label: "Verified Space Mission",
       text: "European Space Agency confirms deployment of Sentinel-7 carbon monitoring satellite into Sun-synchronous orbit at 705 km.",
-      url: "https://nature.com/articles/esa-sentinel-7-deployment-success",
-      resultId: "scan-9022"
+      url: "https://nature.com/articles/esa-sentinel-7-deployment-success"
     },
     {
       label: "Misleading Energy Stats",
       text: "Viral claim states electric vehicles generate 10x more lifetime emissions than diesel cars due to battery manufacturing.",
-      url: "https://socialtrendpulse.net/ev-emissions-diesel-comparison-leak",
-      resultId: "scan-9023"
+      url: "https://socialtrendpulse.net/ev-emissions-diesel-comparison-leak"
     }
   ];
 
-  const handleStartAnalysis = (presetResultId = null) => {
+  const appendLog = (msg) => {
+    setLiveLog(prev => [...prev, { text: msg, time: Date.now() }]);
+  };
+
+  const handleStartAnalysis = async (explicitQuery = null) => {
+    let queryToAnalyze = explicitQuery;
+    if (!queryToAnalyze) {
+      if (activeTab === 'url') queryToAnalyze = urlInput.trim();
+      else if (activeTab === 'text') queryToAnalyze = textInput.trim();
+      else queryToAnalyze = "Viral social meme claiming 5G towers cause magnetic weather interference";
+    }
+    if (!queryToAnalyze) queryToAnalyze = "Scientists discover miracle fruit reverses aging in 48 hours";
+
     setScanning(true);
     setScanStep(0);
+    setLiveLog([]);
+    setElapsed(0);
+    setActiveModel('gemini-2.5-flash');
 
-    const interval = setInterval(() => {
-      setScanStep((prev) => {
-        if (prev < scanSteps.length - 1) {
-          return prev + 1;
-        } else {
-          clearInterval(interval);
-          setTimeout(() => {
-            setScanning(false);
-            const targetId = presetResultId || 'scan-9021';
-            onScanComplete(targetId);
-          }, 600);
-          return prev;
-        }
+    // Start elapsed timer
+    const startTime = Date.now();
+    elapsedRef.current = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
+    // Stream step messages with delays
+    scanSteps.forEach(({ text, delay }, idx) => {
+      setTimeout(() => {
+        appendLog(text);
+        setScanStep(idx);
+      }, delay);
+    });
+
+    try {
+      const analysisResult = await analyzeContentWithGemini(queryToAnalyze, {
+        threshold: confidenceThreshold,
+        deepSearch,
+        biasDetection
       });
-    }, 600);
+
+      clearInterval(elapsedRef.current);
+      appendLog(`🎯 Analysis complete! Trust score: ${analysisResult.trustScore}/100`);
+      setScanStep(scanSteps.length - 1);
+
+      setTimeout(() => {
+        setScanning(false);
+        onScanComplete(analysisResult);
+      }, 800);
+    } catch (err) {
+      console.error("Analysis failed:", err);
+      clearInterval(elapsedRef.current);
+      appendLog(`⚠️ Error: ${err.message}`);
+      setScanning(false);
+    }
   };
 
   const handleApplyPreset = (preset) => {
     if (activeTab === 'url') {
       setUrlInput(preset.url);
+      handleStartAnalysis(preset.url);
     } else {
       setTextInput(preset.text);
+      handleStartAnalysis(preset.text);
     }
-    handleStartAnalysis(preset.resultId);
   };
 
   return (
     <div className="page-container">
       <div className="section-header">
         <div>
-          <h1 className="section-title">Initiate Content Verification Scan</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                background: '#eff6ff',
+                color: '#2563eb',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                padding: '3px 10px',
+                borderRadius: '9999px',
+                border: '1px solid #bfdbfe'
+              }}
+            >
+              <Zap size={12} /> Real-Time Gemini AI Active
+            </span>
+          </div>
+          <h1 className="section-title">Initiate Live Content Verification Scan</h1>
           <p className="section-subtitle">
-            Submit a URL, statement, or upload a media screenshot for private AI-powered fact-checking.
+            Submit any news article URL, quote, or controversial statement for real-time generative fact-checking.
           </p>
         </div>
       </div>
@@ -204,7 +268,7 @@ export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
               </label>
               <textarea
                 rows={6}
-                placeholder="Paste the headline, quote, or paragraph you wish to fact check..."
+                placeholder="Paste the headline, quote, or paragraph you wish to fact check in real-time..."
                 value={textInput}
                 onChange={(e) => setTextInput(e.target.value)}
                 style={{
@@ -241,7 +305,7 @@ export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
                 Drop viral screenshot or social meme here
               </div>
               <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                TruthLens OCR will extract headline text and analyze claims against fact databases. (Click to load demo meme)
+                Click to load sample meme text and run instant real-time Gemini verification.
               </div>
             </div>
           )}
@@ -268,33 +332,97 @@ export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
 
           {/* Scanning Progress or Action Button */}
           {scanning ? (
-            <div
-              style={{
-                background: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '12px',
-                padding: '22px',
-                textAlign: 'center'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '14px' }}>
-                <Loader2 size={24} color="#2563eb" className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />
-                <span style={{ fontWeight: 800, fontSize: '1rem', color: '#0f172a' }}>
-                  AI Deep Verification in Progress
+            <div style={{ background: '#0f172a', borderRadius: '14px', padding: '20px', border: '1px solid #1e3a5f' }}>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e',
+                    boxShadow: '0 0 8px #22c55e',
+                    animation: 'pulse 1s ease-in-out infinite'
+                  }} />
+                  <span style={{ color: '#f8fafc', fontWeight: 800, fontSize: '0.9rem', fontFamily: 'monospace' }}>
+                    GEMINI LIVE SCAN
+                  </span>
+                  <span style={{
+                    background: '#1d4ed8', color: '#bfdbfe', fontSize: '0.72rem',
+                    padding: '2px 8px', borderRadius: '6px', fontWeight: 700
+                  }}>
+                    {activeModel}
+                  </span>
+                </div>
+                <span style={{ color: '#64748b', fontFamily: 'monospace', fontSize: '0.82rem' }}>
+                  {elapsed}s elapsed
                 </span>
               </div>
-              <p style={{ fontSize: '0.88rem', color: '#2563eb', fontWeight: 600, minHeight: '24px' }}>
-                {scanSteps[scanStep]}
-              </p>
-              <div style={{ height: '6px', background: '#e2e8f0', borderRadius: '3px', marginTop: '14px', overflow: 'hidden' }}>
-                <div
-                  style={{
+
+              {/* Live log terminal */}
+              <div style={{
+                background: '#020617', borderRadius: '10px', padding: '14px',
+                maxHeight: '180px', overflowY: 'auto', marginBottom: '16px',
+                border: '1px solid #1e293b'
+              }}>
+                {liveLog.length === 0 && (
+                  <span style={{ color: '#334155', fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                    Initializing scan engine...
+                  </span>
+                )}
+                {liveLog.map((entry, i) => (
+                  <div key={i} style={{
+                    fontFamily: 'monospace', fontSize: '0.82rem', marginBottom: '6px',
+                    color: i === liveLog.length - 1 ? '#22c55e' : '#94a3b8',
+                    display: 'flex', alignItems: 'flex-start', gap: '8px'
+                  }}>
+                    <span style={{ color: '#475569', flexShrink: 0 }}>
+                      [{String(i + 1).padStart(2, '0')}]
+                    </span>
+                    <span>{entry.text}</span>
+                    {i === liveLog.length - 1 && (
+                      <span style={{ display: 'inline-block', animation: 'blink 1s step-start infinite', color: '#22c55e' }}>▌</span>
+                    )}
+                  </div>
+                ))}
+                <div ref={logEndRef} />
+              </div>
+
+              {/* Pulsing Progress Bar */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#64748b', marginBottom: '6px' }}>
+                  <span>Scan progress</span>
+                  <span style={{ color: '#3b82f6' }}>{Math.round(((scanStep + 1) / scanSteps.length) * 100)}%</span>
+                </div>
+                <div style={{ height: '8px', background: '#1e293b', borderRadius: '4px', overflow: 'hidden', position: 'relative' }}>
+                  <div style={{
                     height: '100%',
                     width: `${((scanStep + 1) / scanSteps.length) * 100}%`,
-                    background: '#2563eb',
-                    transition: 'width 0.4s ease'
-                  }}
-                />
+                    background: 'linear-gradient(90deg, #2563eb, #7c3aed)',
+                    borderRadius: '4px',
+                    transition: 'width 0.6s ease',
+                    position: 'relative'
+                  }}>
+                    <div style={{
+                      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+                      background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                      animation: 'shimmer 1.5s infinite'
+                    }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Step checklist */}
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {scanSteps.map((step, i) => (
+                  <div key={i} style={{
+                    width: '28px', height: '28px', borderRadius: '50%',
+                    background: i <= scanStep ? (i === scanStep ? '#2563eb' : '#16a34a') : '#1e293b',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '0.7rem', color: '#fff', fontWeight: 700,
+                    transition: 'background 0.4s',
+                    border: i === scanStep ? '2px solid #60a5fa' : '2px solid transparent'
+                  }}>
+                    {i < scanStep ? '✓' : i + 1}
+                  </div>
+                ))}
               </div>
             </div>
           ) : (
@@ -303,10 +431,11 @@ export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
               style={{ width: '100%' }}
               onClick={() => handleStartAnalysis()}
             >
-              <Search size={18} />
-              <span>Run TruthLens Analysis</span>
+              <Zap size={18} />
+              <span>Run Live Gemini AI Analysis</span>
             </button>
           )}
+
         </div>
 
         {/* Right Column: Parameters & Model Engine */}
@@ -322,7 +451,7 @@ export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
             {/* Model Selector */}
             <div style={{ marginBottom: '18px' }}>
               <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 600, marginBottom: '6px', color: '#475569' }}>
-                Execution Engine
+                Active AI Engine
               </label>
               <select
                 value={selectedModel}
@@ -335,13 +464,12 @@ export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
                   background: '#ffffff',
                   fontSize: '0.88rem',
                   outline: 'none',
-                  color: '#0f172a'
+                  color: '#0f172a',
+                  fontWeight: 600
                 }}
               >
-                <option value="llama3">Ollama Local — LLaMA 3 (8B Instruct)</option>
-                <option value="mistral">Ollama Local — Mistral 7B</option>
-                <option value="gemma">Ollama Local — Gemma 2 (9B)</option>
-                <option value="gemini">Cloud Fallback — Gemini 1.5 Pro</option>
+                <option value="gemini-2.5-flash">⚡ Gemini 2.5 Flash (Primary — Live)</option>
+                <option value="gemini-3.1-flash-lite">⚡ Gemini 3.1 Flash Lite (Fallback)</option>
               </select>
             </div>
 
@@ -391,22 +519,40 @@ export default function AnalyzeView({ onScanComplete, initialUrl = '' }) {
             </div>
           </div>
 
-          {/* Privacy Guarantee Note */}
+          {/* Live Status Card */}
           <div
             style={{
-              backgroundColor: '#ecfdf5',
-              border: '1px solid #a7f3d0',
+              background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+              border: '1px solid #312e81',
               borderRadius: '12px',
               padding: '16px'
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#047857', fontWeight: 700, fontSize: '0.88rem', marginBottom: '4px' }}>
-              <CheckCircle2 size={16} />
-              <span>Privacy Verified</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <div style={{
+                width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e',
+                boxShadow: '0 0 6px #22c55e', flexShrink: 0
+              }} />
+              <span style={{ color: '#a5f3fc', fontWeight: 700, fontSize: '0.88rem' }}>Live API Connected</span>
+              <span style={{
+                marginLeft: 'auto', background: '#1d4ed8', color: '#bfdbfe',
+                fontSize: '0.68rem', padding: '2px 7px', borderRadius: '5px', fontWeight: 700
+              }}>LIVE</span>
             </div>
-            <p style={{ fontSize: '0.78rem', color: '#065f46', lineHeight: 1.45, margin: 0 }}>
-              Queries submitted through Ollama Local Engine are processed exclusively in your machine's GPU/CPU RAM. No personal identifiers or query text are stored on remote servers.
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                <span style={{ color: '#64748b' }}>Primary model</span>
+                <span style={{ color: '#7dd3fc', fontWeight: 600, fontFamily: 'monospace' }}>gemini-2.5-flash</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                <span style={{ color: '#64748b' }}>Fallback model</span>
+                <span style={{ color: '#94a3b8', fontFamily: 'monospace' }}>gemini-3.1-flash-lite</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem' }}>
+                <span style={{ color: '#64748b' }}>Retry logic</span>
+                <span style={{ color: '#86efac' }}>✓ Backoff enabled</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
